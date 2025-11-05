@@ -26,12 +26,12 @@ class TreeNode:
 
     def evaluate(self) -> float:
         # might need to call my in order search methods
-        return self._inorder_helper(self, self)
+        return self._inorder_evaluate_helper(self, self)
 
-    def _inorder_helper(self, node):
+    def _inorder_evaluate_helper(self, node) -> float:
         if node is not None:
-            left = self._inorder_helper(node.left)
-            right = self._inorder_helper(node.right)
+            left = self._inorder_evaluate_helper(node.left)
+            right = self._inorder_evaluate_helper(node.right)
             if node.value in self.operations_set:
                 # need to perform the operation on the left and right child values, but they may be further operations themselves
                 if node.value == '+':

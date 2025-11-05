@@ -40,5 +40,21 @@ if __name__ == "__main__":
     # 4. apply genetic operators (crossover, mutation) to create a new population
     # 5. repeat steps 2-4 for a number of generations or until a satisfactory solution is found
 
-    # config = read_config('config/config.json')
-    # pop = make_population(config.population_size, config.max_tree_height)
+    config = read_config('config/config.json')
+    pop = make_population(config.population_size, config.max_tree_height)
+    for i, individual in enumerate(pop):
+        print(f"Individual {i}:")
+        individual.print_tree()
+        print()
+
+    # let me try and evaluate the fitness of the first individual
+    individual1 = pop[0]
+    ind1 = individual1.to_string()
+    print("Individual 1 expression:", ind1)
+    print("Type of individual1:", type(ind1))
+    guess_func = make_lambda(ind1, variables)
+    guess_outputs = [guess_func(row) for row in data]
+    mse = mean_squared_error(guess_outputs, target_outputs)
+    print("Mean Squared Error of Individual 1:", mse)
+
+    # divide by zero error is haunting me

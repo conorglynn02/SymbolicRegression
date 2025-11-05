@@ -1,6 +1,6 @@
 {
-    "population_size": 150,
-    "max_tree_height": 25,
+    "population_size": 10,
+    "max_tree_height": 10,
     "max_generations": 50,
     "selection_method": "roulette",
     "crossover_rate": 0.9,
