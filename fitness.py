@@ -21,8 +21,33 @@ def mean_squared_error(predictions, targets) -> float:
     return sum((p - t) ** 2 for p, t in zip(predictions, targets)) / len(predictions)
 
 def evaluate_tree(node: TreeNode, input_vars: dict) -> float:
-    pass
-
+    if node is None:
+        return 0
+    
+    if node.is_leaf():
+        if isinstance(node.value, str):  # variable
+            return node.value
+        elif node.value in input_vars:  # variable in input
+            return input_vars[node.value]
+        else:  # constant
+            return 0
+    
+    left_value = evaluate_tree(node.left, input_vars)
+    right_value = evaluate_tree(node.right, input_vars)
+    
+    try:
+        if node.value == '+':
+            return left_value + right_value
+        elif node.value == '-':
+            return left_value - right_value
+        elif node.value == '*':
+            return left_value * right_value
+        elif node.value == '/':
+            return left_value / right_value if right_value != 0 else 0
+        
+    except Exception:
+        return 0 
+    
 def evaluate_expression(expression:str, input_vars: dict) -> float:
     for var, value in input_vars.items():
         expression = expression.replace(var, str(value))
