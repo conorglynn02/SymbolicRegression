@@ -25,6 +25,18 @@ class Tree:
     def print_tree(self):
         print(self.to_string())
 
+    def random_node(self) -> TreeNode:
+        nodes = self._collect_nodes(self.root)
+        return random.choice(nodes) if nodes else self.root
+
+    def _collect_nodes(self, node: TreeNode) -> list[TreeNode]:
+        if node is None:
+            return []
+        nodes = [node]
+        nodes += self._collect_nodes(node.left)
+        nodes += self._collect_nodes(node.right)
+        return nodes
+
     def traverse_scott_depth_first(self) -> list:
         return []
 
@@ -33,10 +45,6 @@ class Tree:
 
     def traverse_scott_in_order(self) -> list:
         return []
-    
-    def generate_random_structure(self, max_height: int) -> list:
-        if max_height <= 0:
-            return []
 
     def grow(self, max_height: int):
         self.root = TreeNode(None)
