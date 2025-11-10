@@ -5,13 +5,11 @@
 
 import csv
 
-def read_data(file_path: str) -> tuple:
+def read_data(file_path: str) -> tuple[str, list[str], list[list[float]]]:
     data = []
     with open(file_path, 'r') as file:
         reader = csv.reader(file)
         target_expression = next(reader)[0]
-        # temporary -> read the guess expression from the second row to test the mse
-        guess_expression = next(reader)[0]
         # get the variable names from the second row
         variables = next(reader)
         for row in reader:
@@ -20,4 +18,4 @@ def read_data(file_path: str) -> tuple:
             # convert each value to float
             float_row = [float(value) for value in row]
             data.append(float_row)
-    return target_expression, guess_expression, variables, data
+    return target_expression, variables, data
