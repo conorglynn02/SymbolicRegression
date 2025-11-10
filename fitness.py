@@ -1,58 +1,79 @@
 from tree.tree import Tree
 from tree.tree_node import TreeNode
 
-def fitness(individual: Tree, target_function_tree: Tree) -> list:
+def fitness(individual: Tree, target_outputs: list[float], data: list[list[float]], variables: list[str]) -> float:
     # traverse the tree and compute the output for a set of sample inputs
     # compare the output to the target function's output
-    predictions = get_predictions(individual)
-    targets = get_predictions(target_function_tree)
-    return mean_squared_error(predictions, targets)
+    predictions = get_predictions(individual, data, variables)
+    rmse = root_mean_squared_error(predictions, target_outputs)
+    return _fitness(rmse)
 
-def get_predictions(tree: Tree, func_inputs: list) -> list:
+def total_fitness(population: list[Tree], target_outputs: list[float], data: list[list[float]], variables: list[str]) -> float:
+    total = 0.0
+    for individual in population:
+        total += fitness(individual, target_outputs, data, variables)
+    return total
+
+def average_fitness(population: list[Tree], target_outputs: list[float], data: list[list[float]], variables: list[str]) -> float:
+    return total_fitness(population, target_outputs, data, variables) / len(population)
+
+def max_fitness(population: list[Tree], target_outputs: list[float], data: list[list[float]], variables: list[str]) -> float:
+    max_fit, max_individual = float('-inf'), None
+    for individual in population:
+        fit = fitness(individual, target_outputs, data, variables)
+        if fit > max_fit:
+            max_fit = fit
+            max_individual = individual
+    return max_fit, max_individual
+
+def get_predictions(tree: Tree, data: list[list[float]], variables: list[str]) -> list[float]:
     predictions = []
-    for input in func_inputs:
-        prediction = evaluate_tree(tree.root, input)
+    var_index = {var: i for i, var in enumerate(variables)}
+    for row in data:
+        prediction = evaluate_tree(tree.root, row, var_index)
         predictions.append(prediction)
     return predictions
 
-def mean_squared_error(predictions, targets) -> float:
+def mean_squared_error(predictions: list[float], targets: list[float]) -> float:
     if len(predictions) != len(targets):
         raise ValueError("Length of predictions and targets must be the same.")
     return sum((p - t) ** 2 for p, t in zip(predictions, targets)) / len(predictions)
 
-def evaluate_tree(node: TreeNode, input_vars: dict) -> float:
+def root_mean_squared_error(predictions: list[float], targets: list[float]) -> float:
+    if len(predictions) != len(targets):
+        raise ValueError("Length of predictions and targets must be the same.")
+    return (sum((p - t) ** 2 for p, t in zip(predictions, targets)) / len(predictions)) ** 0.5
+
+def _fitness(mse: float) -> float:
+    return 1 / (1 + mse)
+
+def evaluate_tree(node: TreeNode, row: list[float], var_index: dict[str, int]) -> float:
     if node is None:
         return 0
-    
+
     if node.is_leaf():
-        if isinstance(node.value, str):  # variable
-            return node.value
-        elif node.value in input_vars:  # variable in input
-            return input_vars[node.value]
-        else:  # constant
-            return 0
-    
-    left_value = evaluate_tree(node.left, input_vars)
-    right_value = evaluate_tree(node.right, input_vars)
-    
+        value = node.value
+        if isinstance(value, str):
+            index = var_index.get(value, None)
+            return row[index] if index is not None else 0
+        else:
+            return value
+
+    left_value = evaluate_tree(node.left, row, var_index)
+    right_value = evaluate_tree(node.right, row, var_index)
+
+    op = node.value
     try:
-        if node.value == '+':
+        if op == '+':
             return left_value + right_value
-        elif node.value == '-':
+        elif op == '-':
             return left_value - right_value
-        elif node.value == '*':
+        elif op == '*':
             return left_value * right_value
-        elif node.value == '/':
-            return left_value / right_value if right_value != 0 else 0
-        
+        elif op == '/':
+            return left_value / right_value if right_value != 0 else 1 # avoid continuous division by zero
+        else:
+            raise ValueError(f"Unknown operator: {op}")
+
     except Exception:
-        return 0 
-    
-def evaluate_expression(expression:str, input_vars: dict) -> float:
-    for var, value in input_vars.items():
-        expression = expression.replace(var, str(value))
-    try:
-        result = eval(expression)
-    except ZeroDivisionError:
-        result = 0  # handle division by zero gracefully
-    return result
+        return 0

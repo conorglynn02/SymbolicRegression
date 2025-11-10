@@ -16,5 +16,10 @@ def make_lambda(expr: str, variables: list):
     # build the lambda
     return eval(f"lambda v: {expr}")
 
-def evaluate(func, input_vars: dict) -> float:
-    return func(**input_vars)
+def get_target_outputs(target_function: str, data: list[list[float]], variables: list[str]) -> list[float]:
+    target_func = make_lambda(target_function, variables)
+    outputs = []
+    for row in data:
+        output = target_func(row)
+        outputs.append(output)
+    return outputs
