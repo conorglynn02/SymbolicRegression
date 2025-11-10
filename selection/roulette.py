@@ -2,7 +2,7 @@ import random
 from selection.selection_interface import ISelection
 from tree.tree import Tree
 
-class RouletteWheelSelection(ISelection):
+class RouletteSelection(ISelection):
     def create_parents_pool(self, population: list[Tree], fitness_scores: list[float]) -> list[Tree]:
         if len(population) != len(fitness_scores):
             raise ValueError("Population and fitness scores must have the same length.")

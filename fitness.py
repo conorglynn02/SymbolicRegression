@@ -17,7 +17,7 @@ def total_fitness(population: list[Tree], target_outputs: list[float], data: lis
 def average_fitness(population: list[Tree], target_outputs: list[float], data: list[list[float]], variables: list[str]) -> float:
     return total_fitness(population, target_outputs, data, variables) / len(population)
 
-def max_fitness(population: list[Tree], target_outputs: list[float], data: list[list[float]], variables: list[str]) -> float:
+def max_fitness(population: list[Tree], target_outputs: list[float], data: list[list[float]], variables: list[str]) -> tuple[float, Tree | None]:
     max_fit, max_individual = float('-inf'), None
     for individual in population:
         fit = fitness(individual, target_outputs, data, variables)

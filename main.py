@@ -1,60 +1,45 @@
-from helper import make_lambda, evaluate
-from dataset.data_reader import read_data
 from config.config_reader import read_config
+from dataset.data_reader import read_data
+from helper import get_target_outputs
 from population import make_population
-from tree.tree import Tree
-from fitness import mean_squared_error
+from fitness import fitness, average_fitness, max_fitness
+from selection.roulette import RouletteSelection
+from evolve.crossover import run_crossover
+from evolve.mutation import run_mutations
+from plot_results import plot_average_fitness_history
 
 if __name__ == "__main__":
-
-    target_expression, guess_expression, variables, data = read_data('dataset/data.csv')
+    target_expression, variables, data = read_data('dataset/data.csv')
     print("Target Expression:", target_expression)
-    print("Guess Expression:", guess_expression)
-    print("Variables:", variables)
-    print("Data sample:", data[:5])  # print first 5 rows
-
-    target_func = make_lambda(target_expression, variables)
-    guess_func = make_lambda(guess_expression, variables)
-
-    # difference between row, *row and **row?
-    # row is a list, *row unpacks the list into separate arguments, **row would unpack a dictionary
-    target_outputs = [target_func(row) for row in data]
-    guess_outputs = [guess_func(row) for row in data]
-
-    for i, row in enumerate(data[:5]):  # test first 5 rows
-        print(f"1. Input: {row}, Output: {target_outputs[i]}")
-        print(f"2. Input: {row}, Output: {guess_outputs[i]}")
-
-    mse = mean_squared_error(guess_outputs, target_outputs)
-    print("Mean Squared Error between guess and target:", mse)
-
-    # target_func = "2x+5y-z"
-    # f = lambda x, y, z: 2*x + 3*y - z
-    # target_ans = evaluate(f, {"x": 2, "y": 4, "z": 5})  # 11
-
-    # how to do genetic programming for this target function?
-    # steps:
-    # 1. define a population of random functions
-    # 2. define a fitness function to evaluate how close a function is to the target function, e.g., mean squared error over a set of sample inputs
-    # 3. select parents from the population based on fitness
-    # 4. apply genetic operators (crossover, mutation) to create a new population
-    # 5. repeat steps 2-4 for a number of generations or until a satisfactory solution is found
 
     config = read_config('config/config.json')
-    pop = make_population(config.population_size, config.max_tree_height)
-    for i, individual in enumerate(pop):
-        print(f"Individual {i}:")
-        individual.print_tree()
-        print()
+    population = make_population(config.population_size, config.max_tree_height)
 
-    # let me try and evaluate the fitness of the first individual
-    individual1 = pop[0]
-    ind1 = individual1.to_string()
-    print("Individual 1 expression:", ind1)
-    print("Type of individual1:", type(ind1))
-    guess_func = make_lambda(ind1, variables)
-    guess_outputs = [guess_func(row) for row in data]
-    mse = mean_squared_error(guess_outputs, target_outputs)
-    print("Mean Squared Error of Individual 1:", mse)
+    target_outputs = get_target_outputs(target_expression, data, variables)
+    average_fitness_history = []
 
-    # divide by zero error is haunting me
+    for generation in range(1, config.max_generations + 1):
+        fitness_scores = [fitness(individual, target_outputs, data, variables) for individual in population]
+        current_average_fitness = average_fitness(population, target_outputs, data, variables)
+        average_fitness_history.append(current_average_fitness)
+        max_fit, best_individual = max_fitness(population, target_outputs, data, variables)
+        print(f"Generation {generation}: Average Fitness = {current_average_fitness}, Max Fitness = {max_fit}")
+        print("Best Individual Expression:", best_individual.to_string())
+
+        if max_fit >= 0.5: # fitness threshold
+            print("Optimal solution found!")
+            break
+
+        # selection
+        selector = RouletteSelection()
+        parents = selector.create_parents_pool(population, fitness_scores)
+        # crossover
+        children = run_crossover(parents, config.population_size, config.crossover_rate)
+        # mutations
+        mutated_children = run_mutations(children, config.mutation_rate)
+        population = mutated_children
+
+    print("The process is completed")
+    print("Elapsed generations: ", generation)
+    print(average_fitness_history)
+    plot_average_fitness_history(average_fitness_history)

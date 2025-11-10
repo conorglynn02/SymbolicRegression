@@ -20,10 +20,8 @@ def make_population(size: int, max_tree_height: int) -> list:
         if i % 2 == 0:
             # grow method
             tree.grow(max_height=height)
-            print(f"Grow of height {height}")
         else:
             # full method
             tree.full(max_height=height)
-            print(f"Full of height {height}")
         population.append(tree)
     return population
