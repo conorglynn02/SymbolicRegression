@@ -1,9 +1,10 @@
 class TreeNode:
-    def __init__(self, value):
+    def __init__(self, value, current_depth):
         self.value = value
         self.left = None
         self.right = None
         self.operations_set = set(['+', '-', '*', '/'])
+        self.current_depth = current_depth
 
     def add_child(self, child_node):
         if not self.left:

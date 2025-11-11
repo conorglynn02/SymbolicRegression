@@ -19,9 +19,9 @@ def make_population(size: int, max_tree_height: int) -> list:
         # half grow and half full
         if i % 2 == 0:
             # grow method
-            tree.grow(max_height=height)
+            tree.grow(max_depth=height)
         else:
             # full method
-            tree.full(max_height=height)
+            tree.full(max_depth=height)
         population.append(tree)
     return population

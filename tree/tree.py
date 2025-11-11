@@ -7,8 +7,8 @@ VARIABLES = ['x', 'y', 'z']
 TERMINALS = VARIABLES * 2 + CONSTANTS
 
 class Tree:
-    def __init__(self, node_value=None):
-        self.root = TreeNode(node_value)
+    def __init__(self, node_value=None, current_depth=1):
+        self.root = TreeNode(node_value, current_depth=current_depth)
 
     def to_string(self) -> str:
         return self._to_string_helper(self.root)
@@ -46,30 +46,30 @@ class Tree:
     def traverse_scott_in_order(self) -> list:
         return []
 
-    def grow(self, max_height: int):
-        self.root = TreeNode(None)
-        self._grow(self.root, 1, max_height)
+    def grow(self, max_depth: int, current_depth=1):
+        self.root = TreeNode(None, current_depth=current_depth)
+        self._grow(self.root, current_depth, max_depth)
 
-    def _grow(self, node: TreeNode, current_height: int, max_height: int):
-        if current_height < max_height and random.random() < 0.7:
+    def _grow(self, node: TreeNode, current_depth: int, max_depth: int):
+        if current_depth < max_depth and random.random() < 0.7:
                 node.value = random.choice(OPERATIONS)
-                node.left = TreeNode(None)
-                node.right = TreeNode(None)
-                self._grow(node.left, current_height + 1, max_height)
-                self._grow(node.right, current_height + 1, max_height)
+                node.left = TreeNode(None, current_depth + 1)
+                node.right = TreeNode(None, current_depth + 1)
+                self._grow(node.left, current_depth + 1, max_depth)
+                self._grow(node.right, current_depth + 1, max_depth)
         else:
             node.value = random.choice(TERMINALS)
 
-    def full(self, max_height: int):
-        self.root = TreeNode(None)
-        self._full(self.root, 1, max_height)
+    def full(self, max_depth: int):
+        self.root = TreeNode(None, current_depth=1)
+        self._full(self.root, 1, max_depth)
 
-    def _full(self, node: TreeNode, current_height: int, max_height: int):
-        if current_height < max_height:
+    def _full(self, node: TreeNode, current_depth: int, max_depth: int):
+        if current_depth < max_depth:
             node.value = random.choice(OPERATIONS)
-            node.left = TreeNode(None)
-            node.right = TreeNode(None)
-            self._full(node.left, current_height + 1, max_height)
-            self._full(node.right, current_height + 1, max_height)
+            node.left = TreeNode(None, current_depth + 1)
+            node.right = TreeNode(None, current_depth + 1)
+            self._full(node.left, current_depth + 1, max_depth)
+            self._full(node.right, current_depth + 1, max_depth)
         else:
             node.value = random.choice(TERMINALS)
